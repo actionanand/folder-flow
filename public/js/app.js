@@ -37,3 +37,10 @@ document.addEventListener('DOMContentLoaded', () => {
       : '';
   }
 });
+
+// Share stream modal
+function openShareModal(filePath, fileName) {
+  document.getElementById('share-file-path').value = filePath;
+  document.getElementById('share-file-name').textContent = '🎬 ' + fileName;
+  document.getElementById('share-modal').classList.add('active');
+}

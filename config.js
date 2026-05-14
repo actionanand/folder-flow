@@ -1,6 +1,6 @@
 const path = require('path');
 
-module.exports = {
+const config = {
   // PIN for authentication (change this!)
   pin: process.env.FOLDER_FLOW_PIN || '1234',
 
@@ -25,4 +25,9 @@ module.exports = {
 
   // Session secret
   sessionSecret: process.env.SESSION_SECRET || 'folder-flow-secret-change-me',
+
+  // Active shared streams: { token: { filePath, pin, label, createdAt } }
+  sharedStreams: {},
 };
+
+module.exports = config;

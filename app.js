@@ -12,6 +12,7 @@ const { formatSize } = require('./routes/files');
 const authRoutes = require('./routes/auth');
 const fileRoutes = require('./routes/files');
 const streamRoutes = require('./routes/stream');
+const shareRoutes = require('./routes/share');
 const { requireAuth } = require('./middleware/auth');
 
 const app = express();
@@ -44,8 +45,9 @@ app.locals.formatSize = formatSize;
 app.use(authRoutes);
 app.use(fileRoutes);
 app.use(streamRoutes);
+app.use(shareRoutes);
 
-// FTP info page with QR codes
+// FTP info page with QR codes, network info, PIN change
 app.get('/ftp-info', requireAuth, async (req, res) => {
   const ip = getLocalIP();
   const webUrl = `http://${ip}:${config.port}`;
@@ -53,7 +55,34 @@ app.get('/ftp-info', requireAuth, async (req, res) => {
 
   const [webQR, ftpQR] = await Promise.all([generateQR(webUrl), generateQR(ftpUrl)]);
 
-  res.render('ftp-info', { webUrl, ftpUrl, webQR, ftpQR });
+  const networkInfo = {
+    lanIP: ip,
+    wslIP: isWSL() ? getWSLIP() : null,
+    isWSL: isWSL(),
+    isWSL2: isWSL2(),
+    envLabel: isWSL2() ? 'WSL2 (NAT)' : isWSL() ? 'WSL1 (Shared)' : 'Native',
+  };
+
+  res.render('ftp-info', {
+    webUrl, ftpUrl, webQR, ftpQR, networkInfo,
+    port: config.port, ftpPort: config.ftpPort,
+    successMsg: req.query.success || null,
+    pinError: req.query.pinError || null,
+  });
+});
+
+// Change PIN (via UI)
+app.post('/change-pin', requireAuth, (req, res) => {
+  const { currentPin, newPin } = req.body;
+  if (currentPin !== config.pin) {
+    return res.redirect('/ftp-info?pinError=Current+PIN+is+incorrect');
+  }
+  if (!newPin || newPin.length < 4) {
+    return res.redirect('/ftp-info?pinError=New+PIN+must+be+at+least+4+characters');
+  }
+  config.pin = newPin;
+  console.log(`  🔐 PIN changed at runtime to: ${newPin}`);
+  res.redirect('/ftp-info?success=PIN+updated+successfully');
 });
 
 // ---- Start servers ----

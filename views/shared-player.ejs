@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Folder Flow — <%= label %></title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body class="<%= mimeType ? '' : 'login-page' %>">
+  <% if (!mimeType) { %>
+    <!-- PIN entry for shared stream -->
+    <div class="login-card">
+      <div class="login-logo">
+        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+          <polygon points="5 3 19 12 5 21 5 3"/>
+        </svg>
+        <h1><%= label %></h1>
+        <p class="subtitle">Enter the stream PIN to watch</p>
+      </div>
+      <% if (error) { %>
+        <div class="alert alert-error"><%= error %></div>
+      <% } %>
+      <form method="POST" action="/s/<%= token %>" autocomplete="off">
+        <input type="password" name="pin" placeholder="Stream PIN" autofocus required class="pin-input">
+        <button type="submit" class="btn btn-primary btn-block">Watch</button>
+      </form>
+    </div>
+  <% } else { %>
+    <!-- Player -->
+    <header class="topbar">
+      <div class="topbar-left">
+        <span class="logo">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <polygon points="5 3 19 12 5 21 5 3"/>
+          </svg>
+          <%= label %>
+        </span>
+      </div>
+    </header>
+    <main class="container player-container">
+      <div class="player-wrapper">
+        <% if (isAudio) { %>
+          <audio controls autoplay class="audio-player">
+            <source src="/s/<%= token %>/data" type="<%= mimeType %>">
+            Your browser does not support audio playback.
+          </audio>
+        <% } else { %>
+          <video controls autoplay class="video-player">
+            <source src="/s/<%= token %>/data" type="<%= mimeType %>">
+            Your browser does not support video playback.
+          </video>
+        <% } %>
+      </div>
+    </main>
+  <% } %>
+</body>
+</html>

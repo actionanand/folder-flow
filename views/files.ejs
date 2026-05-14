@@ -17,6 +17,7 @@
       </a>
     </div>
     <div class="topbar-right">
+      <a href="/streams" class="btn btn-sm btn-outline" title="Streams">Streams</a>
       <a href="/ftp-info" class="btn btn-sm btn-outline" title="FTP Info">FTP</a>
       <a href="/logout" class="btn btn-sm btn-outline" title="Logout">Logout</a>
     </div>
@@ -83,6 +84,9 @@
           <span class="col-size"><%= entry.isDirectory ? '—' : formatSize(entry.size) %></span>
           <span class="col-modified"><%= entry.modified.toLocaleDateString() %></span>
           <span class="col-actions">
+            <% if (entry.isVideo || entry.isAudio) { %>
+              <button class="btn btn-xs btn-outline" title="Share Stream" onclick="openShareModal('<%= entry.path %>', '<%= entry.name %>')">📡</button>
+            <% } %>
             <a href="/download?path=<%= encodeURIComponent(entry.path) %>" class="btn btn-xs btn-outline" title="Download">⬇</a>
             <form method="POST" action="/delete" style="display:inline" onsubmit="return confirm('Delete <%= entry.name %>?')">
               <input type="hidden" name="path" value="<%= entry.path %>">
@@ -122,6 +126,23 @@
         <div class="modal-actions">
           <button type="button" class="btn btn-outline" onclick="this.closest('.modal-overlay').classList.remove('active')">Cancel</button>
           <button type="submit" class="btn btn-primary">Create</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Share Stream Modal -->
+  <div id="share-modal" class="modal-overlay" onclick="if(event.target===this)this.classList.remove('active')">
+    <div class="modal">
+      <h3>📡 Share Stream</h3>
+      <p style="font-size:13px;color:var(--text-muted);margin-bottom:12px;">Create a shareable link with its own PIN. Viewers don't need full access.</p>
+      <form method="POST" action="/share-stream">
+        <input type="hidden" name="filePath" id="share-file-path">
+        <div style="margin-bottom:12px;padding:10px;background:var(--bg);border-radius:var(--radius);font-size:14px;" id="share-file-name"></div>
+        <input type="password" name="streamPin" placeholder="Set stream PIN (4+ chars)" required minlength="4" class="input" style="margin-bottom:12px;">
+        <div class="modal-actions">
+          <button type="button" class="btn btn-outline" onclick="this.closest('.modal-overlay').classList.remove('active')">Cancel</button>
+          <button type="submit" class="btn btn-primary">Create Stream Link</button>
         </div>
       </form>
     </div>

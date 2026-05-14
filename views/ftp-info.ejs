@@ -22,6 +22,10 @@
   </header>
 
   <main class="container ftp-info-page">
+    <% if (typeof successMsg !== 'undefined' && successMsg) { %>
+      <div class="alert alert-success"><%= successMsg %></div>
+    <% } %>
+
     <div class="info-cards">
       <div class="info-card">
         <h2>🌐 Web Access</h2>
@@ -44,6 +48,53 @@
         </div>
         <p class="info-hint">Use any FTP client (e.g., FileZilla, Cx File Explorer, Solid Explorer)</p>
       </div>
+    </div>
+
+    <!-- PIN change + network info side by side -->
+    <div class="info-cards" style="margin-top:24px;">
+      <div class="info-card" style="text-align:left;">
+        <h2>🔐 Change PIN</h2>
+        <form method="POST" action="/change-pin">
+          <div style="margin-bottom:12px;">
+            <label style="font-size:13px;color:var(--text-muted);">Current PIN</label>
+            <input type="password" name="currentPin" required class="input" style="margin-top:4px;">
+          </div>
+          <div style="margin-bottom:12px;">
+            <label style="font-size:13px;color:var(--text-muted);">New PIN</label>
+            <input type="password" name="newPin" required minlength="4" maxlength="20" class="input" style="margin-top:4px;">
+          </div>
+          <button type="submit" class="btn btn-primary btn-block">Update PIN</button>
+        </form>
+        <% if (typeof pinError !== 'undefined' && pinError) { %>
+          <div class="alert alert-error" style="margin-top:12px;"><%= pinError %></div>
+        <% } %>
+      </div>
+
+      <% if (networkInfo) { %>
+      <div class="info-card" style="text-align:left;">
+        <h2>🖧 Network Info</h2>
+        <div class="ftp-credentials">
+          <p><strong>Environment:</strong> <%= networkInfo.envLabel %></p>
+          <p><strong>LAN IP:</strong> <%= networkInfo.lanIP %></p>
+          <% if (networkInfo.wslIP) { %>
+            <p><strong>WSL Internal IP:</strong> <%= networkInfo.wslIP %></p>
+          <% } %>
+        </div>
+        <% if (networkInfo.isWSL2) { %>
+          <div style="margin-top:12px;padding:12px;background:var(--bg);border-radius:var(--radius);font-size:13px;">
+            <p style="color:var(--danger);font-weight:600;margin-bottom:8px;">⚠️ WSL2 — Port forwarding required</p>
+            <p style="color:var(--text-muted);margin-bottom:8px;">Run in Admin PowerShell:</p>
+            <code style="font-size:11px;word-break:break-all;color:var(--text);">netsh interface portproxy add v4tov4 listenport=<%= port %> listenaddress=0.0.0.0 connectport=<%= port %> connectaddress=<%= networkInfo.wslIP %></code>
+          </div>
+        <% } else if (networkInfo.isWSL) { %>
+          <div style="margin-top:12px;padding:12px;background:var(--bg);border-radius:var(--radius);font-size:13px;">
+            <p style="color:var(--success);font-weight:600;margin-bottom:8px;">✅ WSL1 — No port forwarding needed</p>
+            <p style="color:var(--text-muted);">If phone can't connect, run in Admin PowerShell:</p>
+            <code style="font-size:11px;word-break:break-all;color:var(--text);">netsh advfirewall firewall add rule name="FolderFlow" dir=in action=allow protocol=TCP localport=<%= port %>,<%= ftpPort %></code>
+          </div>
+        <% } %>
+      </div>
+      <% } %>
     </div>
 
     <div class="ftp-help">
