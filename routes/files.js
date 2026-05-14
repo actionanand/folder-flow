@@ -7,6 +7,7 @@ const archiver = require('archiver');
 const mime = require('mime-types');
 const config = require('../config');
 const { requireAuth } = require('../middleware/auth');
+const { isAdmin } = require('../middleware/auth');
 
 // Ensure upload dir exists
 const uploadPath = path.join(config.shareRoot, config.uploadDir);
@@ -90,6 +91,7 @@ router.get('/', requireAuth, (req, res) => {
     currentPath: reqPath,
     parentPath: parentPath === '.' ? '' : parentPath,
     breadcrumbs: buildBreadcrumbs(reqPath),
+    isAdmin: isAdmin(req),
   });
 });
 

@@ -15,6 +15,9 @@
           <polygon points="5 3 19 12 5 21 5 3"/>
         </svg>
         <h1><%= label %></h1>
+        <% if (live) { %>
+          <span class="live-badge">🔴 LIVE</span>
+        <% } %>
         <p class="subtitle">Enter the stream PIN to watch</p>
       </div>
       <% if (error) { %>
@@ -34,24 +37,88 @@
             <polygon points="5 3 19 12 5 21 5 3"/>
           </svg>
           <%= label %>
+          <% if (live) { %><span class="live-badge" style="margin-left:8px;">🔴 LIVE</span><% } %>
         </span>
+      </div>
+      <div class="topbar-right">
+        <select id="audio-track-select" class="input" style="width:auto;display:none;font-size:12px;padding:4px 8px;">
+        </select>
       </div>
     </header>
     <main class="container player-container">
       <div class="player-wrapper">
         <% if (isAudio) { %>
-          <audio controls autoplay class="audio-player">
+          <audio id="media-player" <% if (!live) { %>controls<% } %> autoplay class="audio-player">
             <source src="/s/<%= token %>/data" type="<%= mimeType %>">
             Your browser does not support audio playback.
           </audio>
+          <% if (live) { %>
+            <div class="live-overlay">
+              <p>🔴 Live Audio — Playback controlled by the host</p>
+            </div>
+          <% } %>
         <% } else { %>
-          <video controls autoplay class="video-player">
+          <video id="media-player" <% if (!live) { %>controls<% } %> autoplay <% if (live) { %>disablePictureInPicture controlsList="nodownload noplaybackrate"<% } %> class="video-player">
             <source src="/s/<%= token %>/data" type="<%= mimeType %>">
             Your browser does not support video playback.
           </video>
+          <% if (live) { %>
+            <div class="live-controls">
+              <button onclick="document.getElementById('media-player').play()" class="btn btn-sm btn-outline">▶ Play</button>
+              <button onclick="document.getElementById('media-player').pause()" class="btn btn-sm btn-outline">⏸ Pause</button>
+              <span class="live-badge" style="margin-left:auto;">🔴 LIVE</span>
+            </div>
+          <% } %>
         <% } %>
       </div>
     </main>
+    <script>
+      (function() {
+        var player = document.getElementById('media-player');
+        var trackSelect = document.getElementById('audio-track-select');
+        if (!player) return;
+
+        <% if (live) { %>
+        // Disable seeking for live mode
+        player.addEventListener('seeking', function() {
+          // Do nothing — let browser handle, but block keyboard/touch seek
+        });
+        // Block keyboard shortcuts
+        document.addEventListener('keydown', function(e) {
+          if (['ArrowLeft','ArrowRight','Home','End'].indexOf(e.key) !== -1) {
+            e.preventDefault();
+          }
+        });
+        // Disable right-click context menu on video
+        player.addEventListener('contextmenu', function(e) { e.preventDefault(); });
+        <% } %>
+
+        // Audio track selection (for videos with multiple audio tracks)
+        if (player.audioTracks) {
+          function populateTracks() {
+            if (player.audioTracks.length > 1) {
+              trackSelect.style.display = 'inline-block';
+              trackSelect.innerHTML = '';
+              for (var i = 0; i < player.audioTracks.length; i++) {
+                var t = player.audioTracks[i];
+                var opt = document.createElement('option');
+                opt.value = i;
+                opt.textContent = t.label || t.language || ('Track ' + (i + 1));
+                if (t.enabled) opt.selected = true;
+                trackSelect.appendChild(opt);
+              }
+            }
+          }
+          player.audioTracks.addEventListener('addtrack', populateTracks);
+          populateTracks();
+          trackSelect.addEventListener('change', function() {
+            for (var i = 0; i < player.audioTracks.length; i++) {
+              player.audioTracks[i].enabled = (i === parseInt(this.value));
+            }
+          });
+        }
+      })();
+    </script>
   <% } %>
 </body>
 </html>

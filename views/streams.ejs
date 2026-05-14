@@ -31,17 +31,25 @@
     <% } else { %>
       <div class="file-list">
         <% streams.forEach(s => { %>
-          <div class="file-row" style="grid-template-columns: 36px 1fr 1fr 80px;">
-            <span class="col-icon">🎬</span>
-            <span class="col-name"><strong><%= s.label %></strong></span>
+          <div class="file-row" style="grid-template-columns: 36px 1fr 1fr 110px;">
+            <span class="col-icon"><%= s.live ? '🔴' : '🎬' %></span>
+            <span class="col-name">
+              <strong><%= s.label %></strong>
+              <% if (s.live) { %><span class="live-badge" style="margin-left:6px;">LIVE</span><% } %>
+              <span style="font-size:11px;color:var(--text-muted);margin-left:6px;">by <%= s.createdBy %></span>
+            </span>
             <span class="col-name" style="font-size:12px;">
               <a href="<%= s.url %>" target="_blank" style="color:var(--primary);word-break:break-all;"><%= s.url %></a>
             </span>
             <span class="col-actions">
-              <form method="POST" action="/streams/stop" onsubmit="return confirm('Stop this stream?')">
-                <input type="hidden" name="token" value="<%= s.token %>">
-                <button type="submit" class="btn btn-xs btn-danger">Stop</button>
-              </form>
+              <% if (s.canStop) { %>
+                <form method="POST" action="/streams/stop" onsubmit="return confirm('Stop this stream?')">
+                  <input type="hidden" name="token" value="<%= s.token %>">
+                  <button type="submit" class="btn btn-xs btn-danger">Stop</button>
+                </form>
+              <% } else { %>
+                <span style="font-size:11px;color:var(--text-muted);">Admin only</span>
+              <% } %>
             </span>
           </div>
         <% }) %>

@@ -14,11 +14,16 @@
 | **FTP Server** | Built-in FTP server for native file manager access on any device |
 | **Video Streaming** | Stream videos directly in the browser with range-request support |
 | **Audio Playback** | Play audio files in the browser |
+| **Live Streaming** | Share a video as 🔴 LIVE — viewers can't seek/rewind |
+| **Audio Track Switching** | Switch between multiple audio tracks (e.g. Tamil, Hindi, English) |
+| **Shareable Stream Links** | Create PIN-protected shareable URLs with QR codes |
+| **Admin / User Roles** | Two-tier PIN auth — Admin has full control, User has limited access |
 | **QR Codes** | Scan a QR code from your phone to connect instantly (Web + FTP) |
-| **PIN Auth** | Simple PIN-based security — no accounts needed |
+| **Change PINs via UI** | Admin can change both PINs from the web interface at runtime |
 | **Drag & Drop Upload** | Drop files into the browser to upload |
 | **Folder Download** | Download entire folders as ZIP archives |
-| **Mobile Responsive** | Clean UI that works on phones, tablets, and desktops |
+| **Mobile Responsive** | Clean dark UI that works on phones, tablets, and desktops |
+| **WSL Auto-detect** | Detects WSL1/WSL2, shows correct IPs and setup instructions |
 
 ---
 
@@ -38,59 +43,99 @@ npm start
 
 ### 3. Open on another device
 
-The console will print your local IP. Open it in a browser on your phone/tablet:
+The console will print your local IP and both PINs:
 
 ```
-http://192.168.x.x:3000
+  ╔══════════════════════════════════════════════╗
+  ║           FOLDER FLOW is running!             ║
+  ╠══════════════════════════════════════════════╣
+  ║  🌐 Web UI    → http://192.168.x.x:3000
+  ║  🔑 Admin PIN → 1234
+  ║  🔐 User PIN  → 0000
+  ║  📁 Root      → ./shared
+  ╚══════════════════════════════════════════════╝
 ```
-
-Default PIN: `1234`
 
 ---
 
-## ⚡ WSL2 Users (Windows Subsystem for Linux) — IMPORTANT
+## Admin vs User
 
-WSL2 runs in a **virtual machine with its own internal IP**. Devices on your WiFi **cannot** reach WSL directly. You must set up **port forwarding** from Windows to WSL.
+| Capability | Admin | User |
+|---|:---:|:---:|
+| Browse, download, upload files | ✅ | ✅ |
+| Create shared streams | ✅ | ✅ |
+| Create live streams | ✅ | ✅ |
+| Stop own streams | ✅ | ✅ |
+| Stop admin-created streams | ✅ | ❌ |
+| Change PINs from UI | ✅ | ❌ |
+| View network info / FTP page | ✅ | ✅ |
 
-### One-time setup (run once, as Admin)
+**Default PINs:** Admin = `1234` / User = `0000`
 
-1. Open **PowerShell as Administrator** (right-click → Run as administrator)
-2. Run:
+---
 
+## Live Streaming (🔴 LIVE mode)
+
+Share a video with restricted playback — viewers can only play/pause, **no seeking, rewinding, or fast-forwarding**.
+
+1. Click the **📡** button next to any video/audio file
+2. Check **🔴 Live mode**
+3. Set a stream PIN and click **Create Stream Link**
+4. Share the URL or QR code — viewers enter the stream PIN to watch
+5. Manage active streams from the **Streams** page
+
+### How it works
+- Live mode removes the seek bar and blocks keyboard shortcuts (arrow keys)
+- Viewers get play/pause buttons only
+- The video file is served with HTTP range requests — not actual real-time live, but the viewer experience mimics a live broadcast
+- Admin-created streams cannot be stopped by users
+
+---
+
+## Audio Track Switching
+
+If a video file has multiple audio tracks (e.g. a movie with Tamil, Hindi, English audio), a dropdown appears in the top bar of the player to switch between them.
+
+> **Note:** Audio track switching depends on browser support for the `audioTracks` API. This works in **Safari** and some Chromium-based browsers. Firefox has limited support. If the dropdown doesn't appear, the browser doesn't expose multiple audio tracks for that file format.
+
+---
+
+## Shareable Stream Links
+
+Create a temporary, PIN-protected link to share a specific video without giving full file access:
+
+1. In the file browser, click **📡** next to a video/audio file
+2. Set a stream PIN (separate from the main app PINs)
+3. Get a shareable URL + QR code
+4. Share it — recipients enter only the stream PIN to watch
+5. Stop streams anytime from the **Streams** page
+
+---
+
+## Port Forwarding Setup (Windows — `.bat` launcher)
+
+For WSL2 users, a `setup-port-forward.bat` file is included. **Double-click it** from Windows Explorer — it auto-elevates to Administrator and configures port forwarding + firewall rules.
+
+Alternatively, run manually in Admin PowerShell:
 ```powershell
-powershell -ExecutionPolicy Bypass -File .\setup-port-forward.ps1
+powershell -ExecutionPolicy Bypass -File C:\path\to\folder-flow\setup-port-forward.ps1
 ```
 
-This will:
-- Detect your WSL IP automatically
-- Forward ports 3000 + 2121-2130 from Windows → WSL
-- Add firewall rules so your phone can connect
-
-3. Then start the app in WSL:
-
-```bash
-npm start
-```
-
-### Manual quick fix (if you prefer)
-
-In **Admin PowerShell**, run these two commands (replace `WSL_IP` with the IP shown in the `npm start` output):
-
+To remove forwarding later:
 ```powershell
-netsh interface portproxy add v4tov4 listenport=3000 listenaddress=0.0.0.0 connectport=3000 connectaddress=WSL_IP
-netsh interface portproxy add v4tov4 listenport=2121 listenaddress=0.0.0.0 connectport=2121 connectaddress=WSL_IP
-netsh advfirewall firewall add rule name="FolderFlow" dir=in action=allow protocol=TCP localport=3000,2121
+powershell -ExecutionPolicy Bypass -File C:\path\to\folder-flow\setup-port-forward.ps1 -Remove
 ```
 
-### After rebooting
+---
 
-WSL gets a **new IP on every reboot**, so re-run the setup script after restart.
+## ⚡ WSL Users (Windows Subsystem for Linux)
 
-### Remove forwarding
+The app auto-detects WSL1 vs WSL2 and shows the correct instructions in both the terminal and the web UI (FTP page → Network Info).
 
-```powershell
-powershell -ExecutionPolicy Bypass -File .\setup-port-forward.ps1 -Remove
-```
+- **WSL1:** Shares Windows networking — no port forwarding needed. May need a firewall rule.
+- **WSL2:** Uses NAT — port forwarding required. Run `setup-port-forward.bat` (double-click) or the manual commands shown at startup.
+
+> WSL IP changes on every reboot. Re-run the setup after restart.
 
 ---
 
@@ -100,7 +145,8 @@ All settings can be changed via **environment variables** or by editing `config.
 
 | Variable | Default | Description |
 |---|---|---|
-| `FOLDER_FLOW_PIN` | `1234` | PIN for authentication |
+| `FOLDER_FLOW_ADMIN_PIN` | `1234` | Admin PIN (full access) |
+| `FOLDER_FLOW_USER_PIN` | `0000` | User PIN (limited access) |
 | `PORT` | `3000` | Web server port |
 | `FTP_PORT` | `2121` | FTP server port |
 | `FTP_PASV_MIN` | `2122` | FTP passive mode min port |
@@ -112,8 +158,8 @@ All settings can be changed via **environment variables** or by editing `config.
 ### Examples
 
 ```bash
-# Custom PIN and share your home folder
-FOLDER_FLOW_PIN=9876 SHARE_ROOT=/home/user npm start
+# Custom PINs and share your home folder
+FOLDER_FLOW_ADMIN_PIN=9876 FOLDER_FLOW_USER_PIN=1111 SHARE_ROOT=/home/user npm start
 
 # Custom ports
 PORT=8080 FTP_PORT=2100 npm start
@@ -127,7 +173,7 @@ The FTP server starts alongside the web server. Connect with any FTP client:
 
 - **Address:** `ftp://<your-ip>:2121`
 - **Username:** anything (any value works)
-- **Password:** your PIN (default: `1234`)
+- **Password:** Admin PIN or User PIN
 
 ### Recommended FTP clients for mobile
 
@@ -136,7 +182,15 @@ The FTP server starts alongside the web server. Connect with any FTP client:
 | Android | Cx File Explorer, Solid Explorer, Total Commander |
 | iOS | FE File Explorer, Documents by Readdle |
 
-Visit the **FTP** page in the web UI to see QR codes for quick connection.
+### Solid Explorer (Android) — Step by Step
+
+1. Open Solid Explorer → tap ☰ → scroll down → tap ⊕ or "New cloud connection"
+2. Select **FTP**
+3. **Host:** your IP (shown in console) | **Port:** `2121`
+4. **Username:** `user` (anything) | **Password:** your PIN
+5. Tap Next → Connect
+
+Visit the **FTP** page in the web UI for QR codes and detailed instructions.
 
 ---
 
@@ -144,30 +198,36 @@ Visit the **FTP** page in the web UI to see QR codes for quick connection.
 
 ```
 folder-flow/
-├── app.js                # Entry point
-├── config.js             # Configuration
+├── app.js                   # Entry point
+├── config.js                # Configuration (PINs, ports, paths)
 ├── package.json
+├── setup-port-forward.ps1   # WSL2 port forwarding (PowerShell)
+├── setup-port-forward.bat   # Double-click launcher (auto-elevates)
 ├── middleware/
-│   └── auth.js           # PIN auth middleware
+│   └── auth.js              # Auth middleware (requireAuth, requireAdmin, isAdmin)
 ├── routes/
-│   ├── auth.js           # Login / logout
-│   ├── files.js          # Browse, upload, download, delete
-│   └── stream.js         # Video/audio streaming
+│   ├── auth.js              # Login / logout (admin + user PINs)
+│   ├── files.js             # Browse, upload, download, delete, mkdir
+│   ├── stream.js            # Video/audio streaming (range requests)
+│   └── share.js             # Shareable stream links (live + normal)
 ├── services/
-│   └── ftp.js            # FTP server
+│   └── ftp.js               # FTP server
 ├── utils/
-│   ├── network.js        # Local IP detection
-│   └── qr.js             # QR code generation
-├── views/                # EJS templates
+│   ├── network.js           # IP detection (WSL-aware)
+│   └── qr.js                # QR code generation
+├── views/                   # EJS templates
 │   ├── login.ejs
 │   ├── files.ejs
-│   ├── player.ejs
-│   ├── ftp-info.ejs
+│   ├── player.ejs           # Normal player (with audio track switching)
+│   ├── ftp-info.ejs         # FTP info, QR codes, PIN change, network info
+│   ├── streams.ejs          # Active streams management
+│   ├── share-created.ejs    # Stream created confirmation + QR
+│   ├── shared-player.ejs    # Shared/live player (PIN-protected)
 │   └── error.ejs
 ├── public/
 │   ├── css/style.css
 │   └── js/app.js
-└── shared/               # Default shared directory
+└── shared/                  # Default shared directory
 ```
 
 ---

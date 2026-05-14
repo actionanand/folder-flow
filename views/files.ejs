@@ -17,6 +17,7 @@
       </a>
     </div>
     <div class="topbar-right">
+      <% if (isAdmin) { %><span class="role-badge admin">Admin</span><% } else { %><span class="role-badge user">User</span><% } %>
       <a href="/streams" class="btn btn-sm btn-outline" title="Streams">Streams</a>
       <a href="/ftp-info" class="btn btn-sm btn-outline" title="FTP Info">FTP</a>
       <a href="/logout" class="btn btn-sm btn-outline" title="Logout">Logout</a>
@@ -140,6 +141,10 @@
         <input type="hidden" name="filePath" id="share-file-path">
         <div style="margin-bottom:12px;padding:10px;background:var(--bg);border-radius:var(--radius);font-size:14px;" id="share-file-name"></div>
         <input type="password" name="streamPin" placeholder="Set stream PIN (4+ chars)" required minlength="4" class="input" style="margin-bottom:12px;">
+        <label style="display:flex;align-items:center;gap:8px;margin-bottom:12px;font-size:14px;color:var(--text-muted);cursor:pointer;">
+          <input type="checkbox" name="live" style="width:18px;height:18px;accent-color:var(--danger);">
+          <span>🔴 Live mode <span style="font-size:12px;">(no seek/rewind for viewers)</span></span>
+        </label>
         <div class="modal-actions">
           <button type="button" class="btn btn-outline" onclick="this.closest('.modal-overlay').classList.remove('active')">Cancel</button>
           <button type="submit" class="btn btn-primary">Create Stream Link</button>

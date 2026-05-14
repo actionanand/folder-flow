@@ -16,7 +16,7 @@ function startFtpServer() {
   });
 
   ftpServer.on('login', ({ connection, username, password }, resolve, reject) => {
-    if (password === config.pin) {
+    if (password === config.adminPin || password === config.userPin) {
       return resolve({ root: config.shareRoot });
     }
     return reject(new Error('Invalid PIN'));

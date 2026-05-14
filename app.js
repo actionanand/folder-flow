@@ -13,7 +13,7 @@ const authRoutes = require('./routes/auth');
 const fileRoutes = require('./routes/files');
 const streamRoutes = require('./routes/stream');
 const shareRoutes = require('./routes/share');
-const { requireAuth } = require('./middleware/auth');
+const { requireAuth, requireAdmin, isAdmin } = require('./middleware/auth');
 
 const app = express();
 
@@ -68,21 +68,29 @@ app.get('/ftp-info', requireAuth, async (req, res) => {
     port: config.port, ftpPort: config.ftpPort,
     successMsg: req.query.success || null,
     pinError: req.query.pinError || null,
+    isAdmin: isAdmin(req),
   });
 });
 
-// Change PIN (via UI)
-app.post('/change-pin', requireAuth, (req, res) => {
-  const { currentPin, newPin } = req.body;
-  if (currentPin !== config.pin) {
-    return res.redirect('/ftp-info?pinError=Current+PIN+is+incorrect');
+// Change PINs (admin only, via UI)
+app.post('/change-pin', requireAdmin, (req, res) => {
+  const { currentPin, newAdminPin, newUserPin } = req.body;
+  if (currentPin !== config.adminPin) {
+    return res.redirect('/ftp-info?pinError=Current+Admin+PIN+is+incorrect');
   }
-  if (!newPin || newPin.length < 4) {
-    return res.redirect('/ftp-info?pinError=New+PIN+must+be+at+least+4+characters');
+  if (!newAdminPin || newAdminPin.length < 4) {
+    return res.redirect('/ftp-info?pinError=Admin+PIN+must+be+at+least+4+characters');
   }
-  config.pin = newPin;
-  console.log(`  🔐 PIN changed at runtime to: ${newPin}`);
-  res.redirect('/ftp-info?success=PIN+updated+successfully');
+  if (!newUserPin || newUserPin.length < 4) {
+    return res.redirect('/ftp-info?pinError=User+PIN+must+be+at+least+4+characters');
+  }
+  if (newAdminPin === newUserPin) {
+    return res.redirect('/ftp-info?pinError=Admin+and+User+PINs+must+be+different');
+  }
+  config.adminPin = newAdminPin;
+  config.userPin = newUserPin;
+  console.log(`  🔐 PINs changed → Admin: ${newAdminPin} | User: ${newUserPin}`);
+  res.redirect('/ftp-info?success=PINs+updated+successfully');
 });
 
 // ---- Start servers ----
@@ -94,9 +102,10 @@ app.listen(config.port, '0.0.0.0', () => {
   console.log('  ╔══════════════════════════════════════════════╗');
   console.log('  ║           FOLDER FLOW is running!             ║');
   console.log('  ╠══════════════════════════════════════════════╣');
-  console.log(`  ║  🌐 Web UI → http://${lanIP}:${config.port}`);
-  console.log(`  ║  🔐 PIN   → ${config.pin}`);
-  console.log(`  ║  📁 Root  → ${config.shareRoot}`);
+  console.log(`  ║  🌐 Web UI    → http://${lanIP}:${config.port}`);
+  console.log(`  ║  🔑 Admin PIN → ${config.adminPin}`);
+  console.log(`  ║  🔐 User PIN  → ${config.userPin}`);
+  console.log(`  ║  📁 Root      → ${config.shareRoot}`);
   console.log('  ╚══════════════════════════════════════════════╝');
 
   if (isWSL()) {

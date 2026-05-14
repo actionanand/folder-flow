@@ -8,8 +8,14 @@ router.get('/login', (req, res) => {
 
 router.post('/login', (req, res) => {
   const { pin } = req.body;
-  if (pin === config.pin) {
+  if (pin === config.adminPin) {
     req.session.authenticated = true;
+    req.session.role = 'admin';
+    return res.redirect('/');
+  }
+  if (pin === config.userPin) {
+    req.session.authenticated = true;
+    req.session.role = 'user';
     return res.redirect('/');
   }
   res.render('login', { error: 'Invalid PIN. Try again.' });

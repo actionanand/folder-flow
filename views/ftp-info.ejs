@@ -50,25 +50,31 @@
       </div>
     </div>
 
-    <!-- PIN change + network info side by side -->
+    <!-- PIN change (admin only) + network info side by side -->
     <div class="info-cards" style="margin-top:24px;">
+      <% if (isAdmin) { %>
       <div class="info-card" style="text-align:left;">
-        <h2>🔐 Change PIN</h2>
+        <h2>🔐 Change PINs</h2>
         <form method="POST" action="/change-pin">
           <div style="margin-bottom:12px;">
-            <label style="font-size:13px;color:var(--text-muted);">Current PIN</label>
+            <label style="font-size:13px;color:var(--text-muted);">Current Admin PIN</label>
             <input type="password" name="currentPin" required class="input" style="margin-top:4px;">
           </div>
           <div style="margin-bottom:12px;">
-            <label style="font-size:13px;color:var(--text-muted);">New PIN</label>
-            <input type="password" name="newPin" required minlength="4" maxlength="20" class="input" style="margin-top:4px;">
+            <label style="font-size:13px;color:var(--text-muted);">New Admin PIN</label>
+            <input type="password" name="newAdminPin" required minlength="4" maxlength="20" class="input" style="margin-top:4px;">
           </div>
-          <button type="submit" class="btn btn-primary btn-block">Update PIN</button>
+          <div style="margin-bottom:12px;">
+            <label style="font-size:13px;color:var(--text-muted);">New User PIN</label>
+            <input type="password" name="newUserPin" required minlength="4" maxlength="20" class="input" style="margin-top:4px;">
+          </div>
+          <button type="submit" class="btn btn-primary btn-block">Update PINs</button>
         </form>
         <% if (typeof pinError !== 'undefined' && pinError) { %>
           <div class="alert alert-error" style="margin-top:12px;"><%= pinError %></div>
         <% } %>
       </div>
+      <% } %>
 
       <% if (networkInfo) { %>
       <div class="info-card" style="text-align:left;">

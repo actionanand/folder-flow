@@ -17,6 +17,8 @@
       </a>
     </div>
     <div class="topbar-right">
+      <select id="audio-track-select" class="input" style="width:auto;display:none;font-size:12px;padding:4px 8px;">
+      </select>
       <a href="javascript:history.back()" class="btn btn-sm btn-outline">← Back</a>
       <a href="/download?path=<%= encodeURIComponent(filePath) %>" class="btn btn-sm btn-primary">⬇ Download</a>
     </div>
@@ -26,17 +28,47 @@
     <h2 class="player-title"><%= fileName %></h2>
     <div class="player-wrapper">
       <% if (isAudio) { %>
-        <audio controls autoplay class="audio-player">
+        <audio id="media-player" controls autoplay class="audio-player">
           <source src="/stream?path=<%= encodeURIComponent(filePath) %>" type="<%= mimeType %>">
           Your browser does not support the audio element.
         </audio>
       <% } else { %>
-        <video controls autoplay class="video-player">
+        <video id="media-player" controls autoplay class="video-player">
           <source src="/stream?path=<%= encodeURIComponent(filePath) %>" type="<%= mimeType %>">
           Your browser does not support the video element.
         </video>
       <% } %>
     </div>
   </main>
+
+  <script>
+    (function() {
+      var player = document.getElementById('media-player');
+      var trackSelect = document.getElementById('audio-track-select');
+      if (!player || !player.audioTracks) return;
+
+      function populateTracks() {
+        if (player.audioTracks.length > 1) {
+          trackSelect.style.display = 'inline-block';
+          trackSelect.innerHTML = '';
+          for (var i = 0; i < player.audioTracks.length; i++) {
+            var t = player.audioTracks[i];
+            var opt = document.createElement('option');
+            opt.value = i;
+            opt.textContent = t.label || t.language || ('Track ' + (i + 1));
+            if (t.enabled) opt.selected = true;
+            trackSelect.appendChild(opt);
+          }
+        }
+      }
+      player.audioTracks.addEventListener('addtrack', populateTracks);
+      populateTracks();
+      trackSelect.addEventListener('change', function() {
+        for (var i = 0; i < player.audioTracks.length; i++) {
+          player.audioTracks[i].enabled = (i === parseInt(this.value));
+        }
+      });
+    })();
+  </script>
 </body>
 </html>

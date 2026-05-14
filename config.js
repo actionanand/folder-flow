@@ -1,8 +1,11 @@
 const path = require('path');
 
 const config = {
-  // PIN for authentication (change this!)
-  pin: process.env.FOLDER_FLOW_PIN || '1234',
+  // Admin PIN (full access: change PINs, stop any stream, manage everything)
+  adminPin: process.env.FOLDER_FLOW_ADMIN_PIN || '1234',
+
+  // User PIN (browse, upload, download, create streams — but no PIN change, can't stop admin streams)
+  userPin: process.env.FOLDER_FLOW_USER_PIN || '0000',
 
   // Web server port
   port: parseInt(process.env.PORT, 10) || 3000,
@@ -26,7 +29,7 @@ const config = {
   // Session secret
   sessionSecret: process.env.SESSION_SECRET || 'folder-flow-secret-change-me',
 
-  // Active shared streams: { token: { filePath, pin, label, createdAt } }
+  // Active shared streams: { token: { filePath, pin, label, createdAt, live, createdBy } }
   sharedStreams: {},
 };
 
