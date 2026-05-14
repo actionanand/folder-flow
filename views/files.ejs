@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Folder Flow</title>
+  <link rel="icon" href="/favicon.ico" type="image/x-icon">
   <link rel="stylesheet" href="/css/style.css">
 </head>
 <body>
@@ -18,6 +19,7 @@
     </div>
     <div class="topbar-right">
       <% if (isAdmin) { %><span class="role-badge admin">Admin</span><% } else { %><span class="role-badge user">User</span><% } %>
+      <a href="/chat" class="btn btn-sm btn-outline" title="Chat">💬</a>
       <a href="/streams" class="btn btn-sm btn-outline" title="Streams">Streams</a>
       <a href="/ftp-info" class="btn btn-sm btn-outline" title="FTP Info">FTP</a>
       <a href="/logout" class="btn btn-sm btn-outline" title="Logout">Logout</a>
@@ -145,6 +147,15 @@
           <input type="checkbox" name="live" style="width:18px;height:18px;accent-color:var(--danger);">
           <span>🔴 Live mode <span style="font-size:12px;">(no seek/rewind for viewers)</span></span>
         </label>
+        <div id="delay-group" style="display:none;margin-bottom:12px;">
+          <label style="font-size:13px;color:var(--text-muted);margin-bottom:4px;display:block;">⏱ Start delay</label>
+          <select name="delay" class="input">
+            <option value="0">Start immediately</option>
+            <option value="1">After 1 minute</option>
+            <option value="5">After 5 minutes</option>
+            <option value="30">After 30 minutes</option>
+          </select>
+        </div>
         <div class="modal-actions">
           <button type="button" class="btn btn-outline" onclick="this.closest('.modal-overlay').classList.remove('active')">Cancel</button>
           <button type="submit" class="btn btn-primary">Create Stream Link</button>

@@ -38,6 +38,17 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 });
 
+// Toggle delay dropdown for live mode
+document.addEventListener('DOMContentLoaded', function() {
+  var liveCheck = document.querySelector('[name="live"]');
+  var delayGroup = document.getElementById('delay-group');
+  if (liveCheck && delayGroup) {
+    liveCheck.addEventListener('change', function() {
+      delayGroup.style.display = this.checked ? 'block' : 'none';
+    });
+  }
+});
+
 // Share stream modal
 function openShareModal(filePath, fileName) {
   document.getElementById('share-file-path').value = filePath;

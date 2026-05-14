@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Folder Flow — Stream Shared!</title>
+  <link rel="icon" href="/favicon.ico" type="image/x-icon">
   <link rel="stylesheet" href="/css/style.css">
 </head>
 <body>
@@ -26,6 +27,9 @@
     <div class="info-card" style="margin-top:32px;">
       <h2>🎬 Stream Ready!</h2>
       <% if (isLive) { %><span class="live-badge" style="margin-bottom:12px;display:inline-block;">🔴 LIVE</span><% } %>
+      <% if (typeof delay !== 'undefined' && delay > 0) { %>
+        <p style="margin-bottom:8px;color:var(--text-muted);font-size:14px;">⏱ Starts in <%= delay %> minute<%= delay > 1 ? 's' : '' %></p>
+      <% } %>
       <p style="margin-bottom:16px;color:var(--text-muted);"><%= label %></p>
       <p class="info-url"><%= shareUrl %></p>
       <div class="qr-wrap">

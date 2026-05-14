@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Folder Flow — <%= label %></title>
+  <link rel="icon" href="/favicon.ico" type="image/x-icon">
   <link rel="stylesheet" href="/css/style.css">
 </head>
 <body class="<%= mimeType ? '' : 'login-page' %>">
@@ -45,10 +46,20 @@
         </select>
       </div>
     </header>
+    <% if (live) { %>
+    <div id="countdown-overlay" class="countdown-overlay" style="display:none;">
+      <div class="countdown-content">
+        <span class="live-badge" style="font-size:18px;padding:8px 20px;">🔴 LIVE</span>
+        <h2 style="margin:20px 0 8px;">Stream starting soon</h2>
+        <div id="countdown-timer" class="countdown-timer"></div>
+        <p style="color:var(--text-muted);margin-top:12px;">Stay on this page. Playback will begin automatically.</p>
+      </div>
+    </div>
+    <% } %>
     <main class="container player-container">
       <div class="player-wrapper">
         <% if (isAudio) { %>
-          <audio id="media-player" <% if (!live) { %>controls<% } %> autoplay class="audio-player">
+          <audio id="media-player" <% if (!live) { %>controls autoplay<% } %> class="audio-player">
             <source src="/s/<%= token %>/data" type="<%= mimeType %>">
             Your browser does not support audio playback.
           </audio>
@@ -58,7 +69,7 @@
             </div>
           <% } %>
         <% } else { %>
-          <video id="media-player" <% if (!live) { %>controls<% } %> autoplay <% if (live) { %>disablePictureInPicture controlsList="nodownload noplaybackrate"<% } %> class="video-player">
+          <video id="media-player" <% if (!live) { %>controls autoplay<% } else { %>disablePictureInPicture controlsList="nodownload noplaybackrate"<% } %> class="video-player">
             <source src="/s/<%= token %>/data" type="<%= mimeType %>">
             Your browser does not support video playback.
           </video>
@@ -79,18 +90,74 @@
         if (!player) return;
 
         <% if (live) { %>
-        // Disable seeking for live mode
-        player.addEventListener('seeking', function() {
-          // Do nothing — let browser handle, but block keyboard/touch seek
-        });
-        // Block keyboard shortcuts
+        // Block keyboard seek shortcuts
         document.addEventListener('keydown', function(e) {
           if (['ArrowLeft','ArrowRight','Home','End'].indexOf(e.key) !== -1) {
             e.preventDefault();
           }
         });
-        // Disable right-click context menu on video
+        // Disable right-click context menu
         player.addEventListener('contextmenu', function(e) { e.preventDefault(); });
+
+        // Live sync with server
+        var countdownEl = document.getElementById('countdown-overlay');
+        var timerEl = document.getElementById('countdown-timer');
+        var firstSync = true;
+        var countdownInterval = null;
+
+        function fetchSync() {
+          return fetch('/s/<%= token %>/sync').then(function(r) { return r.json(); });
+        }
+
+        function showCountdown(ms) {
+          countdownEl.style.display = 'flex';
+          player.pause();
+          if (countdownInterval) clearInterval(countdownInterval);
+          function tick() {
+            if (ms <= 0) {
+              countdownEl.style.display = 'none';
+              if (countdownInterval) { clearInterval(countdownInterval); countdownInterval = null; }
+              fetchSync().then(handleSync);
+              return;
+            }
+            var s = Math.ceil(ms / 1000);
+            var m = Math.floor(s / 60);
+            s = s % 60;
+            timerEl.textContent = (m > 0 ? m + 'm ' : '') + (s < 10 ? '0' : '') + s + 's';
+            ms -= 1000;
+          }
+          tick();
+          countdownInterval = setInterval(tick, 1000);
+        }
+
+        function handleSync(data) {
+          if (!data.started) {
+            showCountdown(data.startsInMs);
+          } else {
+            if (countdownEl) countdownEl.style.display = 'none';
+            if (countdownInterval) { clearInterval(countdownInterval); countdownInterval = null; }
+            if (Math.abs(player.currentTime - data.elapsed) > 3) {
+              player.currentTime = data.elapsed;
+            }
+            if (firstSync) {
+              firstSync = false;
+              player.play().catch(function(){});
+            }
+          }
+        }
+
+        // Snap to live position on seek attempt
+        player.addEventListener('seeking', function() {
+          fetchSync().then(function(data) {
+            if (data.started && Math.abs(player.currentTime - data.elapsed) > 3) {
+              player.currentTime = data.elapsed;
+            }
+          });
+        });
+
+        // Initial sync + periodic re-sync
+        fetchSync().then(handleSync);
+        setInterval(function() { fetchSync().then(handleSync); }, 30000);
         <% } %>
 
         // Audio track selection (for videos with multiple audio tracks)

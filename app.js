@@ -13,6 +13,7 @@ const authRoutes = require('./routes/auth');
 const fileRoutes = require('./routes/files');
 const streamRoutes = require('./routes/stream');
 const shareRoutes = require('./routes/share');
+const chatRoutes = require('./routes/chat');
 const { requireAuth, requireAdmin, isAdmin } = require('./middleware/auth');
 
 const app = express();
@@ -46,6 +47,7 @@ app.use(authRoutes);
 app.use(fileRoutes);
 app.use(streamRoutes);
 app.use(shareRoutes);
+app.use(chatRoutes);
 
 // FTP info page with QR codes, network info, PIN change
 app.get('/ftp-info', requireAuth, async (req, res) => {

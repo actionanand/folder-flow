@@ -29,8 +29,11 @@ const config = {
   // Session secret
   sessionSecret: process.env.SESSION_SECRET || 'folder-flow-secret-change-me',
 
-  // Active shared streams: { token: { filePath, pin, label, createdAt, live, createdBy } }
+  // Active shared streams: { token: { filePath, pin, label, createdAt, live, createdBy, scheduledStart } }
   sharedStreams: {},
+
+  // Chat messages: [{ id, text, sender, visibility, createdAt }]
+  messages: [],
 };
 
 module.exports = config;

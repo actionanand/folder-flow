@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Folder Flow — Chat</title>
+  <link rel="icon" href="/favicon.ico" type="image/x-icon">
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <header class="topbar">
+    <div class="topbar-left">
+      <a href="/" class="logo">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+          <path d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"/>
+        </svg>
+        Folder Flow
+      </a>
+    </div>
+    <div class="topbar-right">
+      <a href="/" class="btn btn-sm btn-outline">← Files</a>
+    </div>
+  </header>
+
+  <main class="container" style="max-width:700px;">
+    <h2 style="margin-bottom:16px;">💬 Chat</h2>
+
+    <div class="chat-messages">
+      <% if (messages.length === 0) { %>
+        <p style="text-align:center;color:var(--text-muted);padding:32px;">No messages yet. Share a URL or note below.</p>
+      <% } %>
+      <% messages.forEach(function(m) { %>
+        <div class="chat-msg<%= m.visibility === 'admin' ? ' chat-msg-private' : '' %>">
+          <div class="chat-msg-header">
+            <span class="role-badge <%= m.sender %>"><%= m.sender === 'admin' ? 'Admin' : 'User' %></span>
+            <% if (m.visibility === 'admin') { %>
+              <span class="chat-visibility">🔒 Admin Only</span>
+            <% } %>
+            <span class="chat-time"><%= m.createdAt.toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'}) %></span>
+          </div>
+          <div class="chat-msg-body"><%= m.text %></div>
+        </div>
+      <% }) %>
+    </div>
+
+    <form method="POST" action="/chat" class="chat-form">
+      <div class="chat-input-row">
+        <input type="text" name="message" placeholder="Type a message or paste a URL..." required maxlength="500" class="input" autofocus style="flex:1;">
+        <% if (isAdmin) { %>
+          <select name="visibility" class="input" style="width:auto;min-width:120px;">
+            <option value="all">👥 Everyone</option>
+            <option value="admin">🔒 Admin Only</option>
+          </select>
+        <% } %>
+        <button type="submit" class="btn btn-primary">Send</button>
+      </div>
+    </form>
+  </main>
+
+  <script>
+    // Auto-linkify URLs in chat messages
+    document.querySelectorAll('.chat-msg-body').forEach(function(el) {
+      var text = el.textContent;
+      var escaped = text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+      var linked = escaped.replace(/(https?:\/\/[^\s<&]+)/g, '<a href="$1" target="_blank" rel="noopener noreferrer">$1</a>');
+      if (linked !== escaped) el.innerHTML = linked;
+    });
+    // Auto-scroll to bottom
+    var msgs = document.querySelector('.chat-messages');
+    if (msgs) msgs.scrollTop = msgs.scrollHeight;
+  </script>
+</body>
+</html>

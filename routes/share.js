@@ -12,7 +12,7 @@ const { generateQR } = require('../utils/qr');
 
 // Create a shared stream (authenticated user picks a file + sets a stream PIN)
 router.post('/share-stream', requireAuth, async (req, res) => {
-  const { filePath: reqPath, streamPin, live } = req.body;
+  const { filePath: reqPath, streamPin, live, delay } = req.body;
   if (!reqPath || !streamPin || streamPin.length < 4) {
     return res.status(400).render('error', { message: 'File path and PIN (4+ chars) required' });
   }
@@ -25,6 +25,8 @@ router.post('/share-stream', requireAuth, async (req, res) => {
 
   const token = crypto.randomBytes(12).toString('hex');
   const isLive = live === 'on' || live === 'true';
+  const delayMin = isLive ? (parseInt(delay) || 0) : 0;
+  const scheduledStart = new Date(Date.now() + delayMin * 60000);
   config.sharedStreams[token] = {
     filePath: cleaned,
     fullPath,
@@ -32,6 +34,7 @@ router.post('/share-stream', requireAuth, async (req, res) => {
     label: path.basename(cleaned),
     createdAt: new Date(),
     live: isLive,
+    scheduledStart,
     createdBy: isAdmin(req) ? 'admin' : 'user',
   };
 
@@ -42,7 +45,7 @@ router.post('/share-stream', requireAuth, async (req, res) => {
   const mode = isLive ? 'LIVE' : 'normal';
   console.log(`  🎬 Stream shared (${mode}): ${path.basename(cleaned)} → ${shareUrl} (PIN: ${streamPin})`);
 
-  res.render('share-created', { shareUrl, qr, label: path.basename(cleaned), token, isLive });
+  res.render('share-created', { shareUrl, qr, label: path.basename(cleaned), token, isLive, delay: delayMin });
 });
 
 // List active streams (for managing)
@@ -115,6 +118,20 @@ router.post('/s/:token', (req, res) => {
     token: req.params.token, label: stream.label, mimeType: null, isAudio: false,
     error: 'Invalid PIN', live: stream.live || false,
   });
+});
+
+// Sync endpoint for live streams (returns timing info)
+router.get('/s/:token/sync', (req, res) => {
+  const stream = config.sharedStreams[req.params.token];
+  if (!stream) return res.status(404).json({ error: 'Not found' });
+  if (!req.session[`stream_${req.params.token}`]) return res.status(403).json({ error: 'Forbidden' });
+  if (!stream.live) return res.json({ started: true, elapsed: 0 });
+  const now = Date.now();
+  const start = stream.scheduledStart ? stream.scheduledStart.getTime() : stream.createdAt.getTime();
+  if (now < start) {
+    return res.json({ started: false, startsInMs: start - now });
+  }
+  return res.json({ started: true, elapsed: (now - start) / 1000 });
 });
 
 // Stream data endpoint (serves the actual file with range support)
