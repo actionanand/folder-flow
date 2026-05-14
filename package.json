@@ -1,0 +1,28 @@
+{
+  "name": "folder-flow",
+  "version": "1.0.0",
+  "description": "WiFi & FTP file sharing app — share files between devices on your local network",
+  "main": "app.js",
+  "scripts": {
+    "start": "node app.js",
+    "dev": "node --watch app.js"
+  },
+  "keywords": [
+    "file-sharing",
+    "ftp",
+    "wifi",
+    "lan",
+    "stream"
+  ],
+  "license": "MIT",
+  "dependencies": {
+    "archiver": "^8.0.0",
+    "ejs": "^5.0.2",
+    "express": "^5.2.1",
+    "express-session": "^1.19.0",
+    "ftp-srv": "^4.6.3",
+    "mime-types": "^3.0.2",
+    "multer": "^2.1.1",
+    "qrcode": "^1.5.4"
+  }
+}

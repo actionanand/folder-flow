@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Folder Flow — Login</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body class="login-page">
+  <div class="login-card">
+    <div class="login-logo">
+      <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+        <path d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"/>
+        <path d="M12 11v6M9 14h6" stroke-linecap="round"/>
+      </svg>
+      <h1>Folder Flow</h1>
+      <p class="subtitle">Enter PIN to access shared files</p>
+    </div>
+    <% if (error) { %>
+      <div class="alert alert-error"><%= error %></div>
+    <% } %>
+    <form method="POST" action="/login" autocomplete="off">
+      <div class="pin-input-group">
+        <input type="password" name="pin" placeholder="Enter PIN" autofocus required maxlength="20" class="pin-input">
+      </div>
+      <button type="submit" class="btn btn-primary btn-block">Unlock</button>
+    </form>
+  </div>
+</body>
+</html>

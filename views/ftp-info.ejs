@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Folder Flow — FTP Info</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <header class="topbar">
+    <div class="topbar-left">
+      <a href="/" class="logo">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+          <path d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"/>
+        </svg>
+        Folder Flow
+      </a>
+    </div>
+    <div class="topbar-right">
+      <a href="/" class="btn btn-sm btn-outline">← Back</a>
+    </div>
+  </header>
+
+  <main class="container ftp-info-page">
+    <div class="info-cards">
+      <div class="info-card">
+        <h2>🌐 Web Access</h2>
+        <p class="info-url"><%= webUrl %></p>
+        <div class="qr-wrap">
+          <img src="<%= webQR %>" alt="Web URL QR Code">
+        </div>
+        <p class="info-hint">Scan with your phone camera to open in browser</p>
+      </div>
+
+      <div class="info-card">
+        <h2>📂 FTP Access</h2>
+        <p class="info-url"><%= ftpUrl %></p>
+        <div class="qr-wrap">
+          <img src="<%= ftpQR %>" alt="FTP URL QR Code">
+        </div>
+        <div class="ftp-credentials">
+          <p><strong>Username:</strong> anything (any value works)</p>
+          <p><strong>Password:</strong> your PIN</p>
+        </div>
+        <p class="info-hint">Use any FTP client (e.g., FileZilla, Cx File Explorer, Solid Explorer)</p>
+      </div>
+    </div>
+
+    <div class="ftp-help">
+      <h3>📱 Solid Explorer (Android) — Step by Step</h3>
+      <ol>
+        <li>Open <strong>Solid Explorer</strong> → tap the <strong>☰ hamburger menu</strong> (top-left)</li>
+        <li>Scroll down, tap <strong>⊕ (plus)</strong> or <strong>"New cloud connection"</strong></li>
+        <li>Select <strong>FTP</strong> from the list</li>
+        <li>Fill in:
+          <ul style="margin-top:6px;">
+            <li><strong>Host:</strong> <code><%= ftpUrl.replace('ftp://', '').split(':')[0] %></code></li>
+            <li><strong>Port:</strong> <code><%= ftpUrl.split(':').pop() %></code></li>
+            <li><strong>Username:</strong> <code>user</code> (any text works)</li>
+            <li><strong>Password:</strong> your PIN (default: <code>1234</code>)</li>
+          </ul>
+        </li>
+        <li>Tap <strong>Next</strong> → <strong>Connect</strong></li>
+        <li>You'll see your shared files — browse, copy, move freely!</li>
+      </ol>
+
+      <h3 style="margin-top:24px;">📱 Other Apps</h3>
+      <ol>
+        <li>Install an FTP-capable file manager:<br>
+          <strong>Android:</strong> Cx File Explorer, Total Commander<br>
+          <strong>iOS:</strong> FE File Explorer, Documents by Readdle
+        </li>
+        <li>Add a new FTP connection with the address above</li>
+        <li>Enter any username and your PIN as password</li>
+        <li>Browse, download, and upload files</li>
+      </ol>
+    </div>
+  </main>
+</body>
+</html>

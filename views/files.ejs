@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Folder Flow</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <header class="topbar">
+    <div class="topbar-left">
+      <a href="/" class="logo">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+          <path d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"/>
+        </svg>
+        Folder Flow
+      </a>
+    </div>
+    <div class="topbar-right">
+      <a href="/ftp-info" class="btn btn-sm btn-outline" title="FTP Info">FTP</a>
+      <a href="/logout" class="btn btn-sm btn-outline" title="Logout">Logout</a>
+    </div>
+  </header>
+
+  <main class="container">
+    <!-- Breadcrumbs -->
+    <nav class="breadcrumbs">
+      <a href="/">🏠 Root</a>
+      <% breadcrumbs.forEach(crumb => { %>
+        <span class="sep">/</span>
+        <a href="/?path=<%= encodeURIComponent(crumb.path) %>"><%= crumb.name %></a>
+      <% }) %>
+    </nav>
+
+    <!-- Actions bar -->
+    <div class="actions-bar">
+      <div class="actions-left">
+        <% if (currentPath) { %>
+          <a href="/?path=<%= encodeURIComponent(parentPath || '') %>" class="btn btn-sm btn-outline">⬆ Up</a>
+        <% } %>
+        <button class="btn btn-sm btn-primary" onclick="document.getElementById('upload-modal').classList.add('active')">⬆ Upload</button>
+        <button class="btn btn-sm btn-outline" onclick="document.getElementById('mkdir-modal').classList.add('active')">📁 New Folder</button>
+      </div>
+      <div class="actions-right">
+        <span class="file-count"><%= entries.length %> items</span>
+      </div>
+    </div>
+
+    <!-- File list -->
+    <div class="file-list">
+      <div class="file-list-header">
+        <span class="col-icon"></span>
+        <span class="col-name">Name</span>
+        <span class="col-size">Size</span>
+        <span class="col-modified">Modified</span>
+        <span class="col-actions">Actions</span>
+      </div>
+      <% if (entries.length === 0) { %>
+        <div class="empty-state">
+          <p>This folder is empty</p>
+        </div>
+      <% } %>
+      <% entries.forEach(entry => { %>
+        <div class="file-row">
+          <span class="col-icon">
+            <% if (entry.isDirectory) { %>📁
+            <% } else if (entry.isVideo) { %>🎬
+            <% } else if (entry.isImage) { %>🖼️
+            <% } else if (entry.isAudio) { %>🎵
+            <% } else { %>📄<% } %>
+          </span>
+          <span class="col-name">
+            <% if (entry.isDirectory) { %>
+              <a href="/?path=<%= encodeURIComponent(entry.path) %>"><%= entry.name %></a>
+            <% } else if (entry.isVideo || entry.isAudio) { %>
+              <a href="/player?path=<%= encodeURIComponent(entry.path) %>"><%= entry.name %></a>
+            <% } else if (entry.isImage) { %>
+              <a href="/stream?path=<%= encodeURIComponent(entry.path) %>" target="_blank"><%= entry.name %></a>
+            <% } else { %>
+              <a href="/download?path=<%= encodeURIComponent(entry.path) %>"><%= entry.name %></a>
+            <% } %>
+          </span>
+          <span class="col-size"><%= entry.isDirectory ? '—' : formatSize(entry.size) %></span>
+          <span class="col-modified"><%= entry.modified.toLocaleDateString() %></span>
+          <span class="col-actions">
+            <a href="/download?path=<%= encodeURIComponent(entry.path) %>" class="btn btn-xs btn-outline" title="Download">⬇</a>
+            <form method="POST" action="/delete" style="display:inline" onsubmit="return confirm('Delete <%= entry.name %>?')">
+              <input type="hidden" name="path" value="<%= entry.path %>">
+              <button type="submit" class="btn btn-xs btn-danger" title="Delete">✕</button>
+            </form>
+          </span>
+        </div>
+      <% }) %>
+    </div>
+  </main>
+
+  <!-- Upload Modal -->
+  <div id="upload-modal" class="modal-overlay" onclick="if(event.target===this)this.classList.remove('active')">
+    <div class="modal">
+      <h3>Upload Files</h3>
+      <form method="POST" action="/upload?path=<%= encodeURIComponent(currentPath) %>" enctype="multipart/form-data">
+        <div class="drop-zone" id="drop-zone">
+          <p>Drag & drop files here or click to browse</p>
+          <input type="file" name="files" id="file-input" multiple>
+        </div>
+        <div id="file-preview" class="file-preview"></div>
+        <div class="modal-actions">
+          <button type="button" class="btn btn-outline" onclick="this.closest('.modal-overlay').classList.remove('active')">Cancel</button>
+          <button type="submit" class="btn btn-primary">Upload</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- New Folder Modal -->
+  <div id="mkdir-modal" class="modal-overlay" onclick="if(event.target===this)this.classList.remove('active')">
+    <div class="modal">
+      <h3>New Folder</h3>
+      <form method="POST" action="/mkdir">
+        <input type="hidden" name="currentPath" value="<%= currentPath %>">
+        <input type="text" name="folderName" placeholder="Folder name" required class="input" autofocus>
+        <div class="modal-actions">
+          <button type="button" class="btn btn-outline" onclick="this.closest('.modal-overlay').classList.remove('active')">Cancel</button>
+          <button type="submit" class="btn btn-primary">Create</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script src="/js/app.js"></script>
+</body>
+</html>
