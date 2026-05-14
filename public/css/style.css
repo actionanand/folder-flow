@@ -413,6 +413,60 @@ a:hover { color: var(--primary-hover); }
   margin: 16px 0;
 }
 
+/* ---- Snackbar ---- */
+.snackbar {
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%) translateY(80px);
+  background: #2d2d3a;
+  color: var(--text);
+  border: 1px solid var(--border);
+  padding: 12px 24px;
+  border-radius: var(--radius);
+  font-size: 14px;
+  z-index: 500;
+  transition: transform 0.3s ease;
+  pointer-events: none;
+  white-space: nowrap;
+}
+.snackbar.active { transform: translateX(-50%) translateY(0); }
+
+/* ---- FFmpeg info ---- */
+.ffmpeg-info {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+}
+.ffmpeg-info summary {
+  padding: 14px 20px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 15px;
+  user-select: none;
+  list-style: none;
+}
+.ffmpeg-info summary::-webkit-details-marker { display: none; }
+.ffmpeg-info summary::before { content: '▶ '; font-size: 10px; color: var(--text-muted); margin-right: 4px; }
+.ffmpeg-info[open] summary::before { content: '▼ '; }
+.ffmpeg-info-body {
+  padding: 0 20px 20px;
+  font-size: 14px;
+  color: var(--text-muted);
+}
+.ffmpeg-info-body pre {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 10px 14px;
+  margin: 6px 0;
+  overflow-x: auto;
+  font-size: 13px;
+}
+.ffmpeg-info-body code { font-family: 'Courier New', monospace; color: var(--text); }
+.ffmpeg-info-body p { margin-top: 4px; }
+
 /* ---- Responsive ---- */
 @media (max-width: 640px) {
   .file-list-header { display: none; }

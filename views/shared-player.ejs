@@ -69,7 +69,7 @@
             </div>
           <% } %>
         <% } else { %>
-          <video id="media-player" <% if (!live) { %>controls autoplay<% } else { %>disablePictureInPicture controlsList="nodownload noplaybackrate"<% } %> class="video-player">
+          <video id="media-player" <% if (!live) { %>controls autoplay<% } else { %><% if (!allowPip) { %>disablePictureInPicture <% } %>controlsList="nodownload noplaybackrate"<% } %> class="video-player">
             <source src="/s/<%= token %>/data" type="<%= mimeType %>">
             Your browser does not support video playback.
           </video>
@@ -77,6 +77,9 @@
             <div class="live-controls">
               <button onclick="document.getElementById('media-player').play()" class="btn btn-sm btn-outline">▶ Play</button>
               <button onclick="document.getElementById('media-player').pause()" class="btn btn-sm btn-outline">⏸ Pause</button>
+              <% if (showMute) { %>
+              <button id="mute-btn" class="btn btn-sm btn-outline" onclick="var p=document.getElementById('media-player');p.muted=!p.muted;this.textContent=p.muted?'🔊 Unmute':'🔇 Mute';">🔇 Mute</button>
+              <% } %>
               <span class="live-badge" style="margin-left:auto;">🔴 LIVE</span>
             </div>
           <% } %>

@@ -12,7 +12,7 @@ const { generateQR } = require('../utils/qr');
 
 // Create a shared stream (authenticated user picks a file + sets a stream PIN)
 router.post('/share-stream', requireAuth, async (req, res) => {
-  const { filePath: reqPath, streamPin, live, delay } = req.body;
+  const { filePath: reqPath, streamPin, live, delay, allowPip, showMute } = req.body;
   if (!reqPath || !streamPin || streamPin.length < 4) {
     return res.status(400).render('error', { message: 'File path and PIN (4+ chars) required' });
   }
@@ -35,6 +35,8 @@ router.post('/share-stream', requireAuth, async (req, res) => {
     createdAt: new Date(),
     live: isLive,
     scheduledStart,
+    allowPip: allowPip === 'on',
+    showMute: showMute === 'on',
     createdBy: isAdmin(req) ? 'admin' : 'user',
   };
 
@@ -92,11 +94,14 @@ router.get('/s/:token', (req, res) => {
     return res.render('shared-player', {
       token: req.params.token, label: stream.label, mimeType, isAudio,
       error: null, live: stream.live || false,
+      allowPip: stream.allowPip !== false,
+      showMute: stream.showMute !== false,
     });
   }
   res.render('shared-player', {
     token: req.params.token, label: stream.label, mimeType: null, isAudio: false,
     error: null, live: stream.live || false,
+    allowPip: true, showMute: true,
   });
 });
 
@@ -112,11 +117,14 @@ router.post('/s/:token', (req, res) => {
     return res.render('shared-player', {
       token: req.params.token, label: stream.label, mimeType, isAudio,
       error: null, live: stream.live || false,
+      allowPip: stream.allowPip !== false,
+      showMute: stream.showMute !== false,
     });
   }
   res.render('shared-player', {
     token: req.params.token, label: stream.label, mimeType: null, isAudio: false,
     error: 'Invalid PIN', live: stream.live || false,
+    allowPip: true, showMute: true,
   });
 });
 

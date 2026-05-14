@@ -15,6 +15,9 @@
     "stream"
   ],
   "license": "MIT",
+  "engines": {
+    "node": ">=20.0.0"
+  },
   "dependencies": {
     "archiver": "^8.0.0",
     "ejs": "^5.0.2",

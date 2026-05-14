@@ -149,12 +149,20 @@
         </label>
         <div id="delay-group" style="display:none;margin-bottom:12px;">
           <label style="font-size:13px;color:var(--text-muted);margin-bottom:4px;display:block;">⏱ Start delay</label>
-          <select name="delay" class="input">
+          <select name="delay" class="input" style="margin-bottom:12px;">
             <option value="0">Start immediately</option>
             <option value="1">After 1 minute</option>
             <option value="5">After 5 minutes</option>
             <option value="30">After 30 minutes</option>
           </select>
+          <label style="display:flex;align-items:center;gap:8px;margin-bottom:8px;font-size:14px;color:var(--text-muted);cursor:pointer;">
+            <input type="checkbox" name="allowPip" checked style="width:16px;height:16px;accent-color:var(--primary);">
+            <span>🖼 Allow Picture-in-Picture</span>
+          </label>
+          <label style="display:flex;align-items:center;gap:8px;font-size:14px;color:var(--text-muted);cursor:pointer;">
+            <input type="checkbox" name="showMute" checked style="width:16px;height:16px;accent-color:var(--primary);">
+            <span>🔇 Show mute button</span>
+          </label>
         </div>
         <div class="modal-actions">
           <button type="button" class="btn btn-outline" onclick="this.closest('.modal-overlay').classList.remove('active')">Cancel</button>
