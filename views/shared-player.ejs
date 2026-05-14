@@ -182,6 +182,25 @@
         // Initial sync + periodic re-sync
         fetchSync().then(handleSync);
         setInterval(function() { fetchSync().then(handleSync); }, 30000);
+        <% } else { %>
+        // Heartbeat for normal streams — detect if host stopped it
+        function showStreamEnded() {
+          player.pause();
+          var wrapper = player.closest('.player-wrapper');
+          if (wrapper && !document.getElementById('stream-ended-overlay')) {
+            var ov = document.createElement('div');
+            ov.id = 'stream-ended-overlay';
+            ov.className = 'live-overlay';
+            ov.style.cssText = 'padding:48px;font-size:16px;';
+            ov.innerHTML = '<p style="font-size:3em;margin-bottom:12px;">⏹</p><p style="font-weight:600;">Stream ended</p><p style="color:var(--text-muted);margin-top:8px;">This stream was stopped by the host.</p>';
+            wrapper.appendChild(ov);
+          }
+        }
+        setInterval(function() {
+          fetch('/s/<%= token %>/sync').then(function(r) {
+            if (r.status === 404 || r.status === 403) showStreamEnded();
+          }).catch(function() {});
+        }, 15000);
         <% } %>
 
         // Audio track selection (for videos with multiple audio tracks)

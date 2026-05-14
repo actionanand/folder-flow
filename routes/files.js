@@ -13,11 +13,14 @@ const { isAdmin } = require('../middleware/auth');
 const uploadPath = path.join(config.shareRoot, config.uploadDir);
 fs.mkdirSync(uploadPath, { recursive: true });
 
-// Multer config
+// Multer config — upload to the currently browsed folder
 const storage = multer.diskStorage({
   destination: (req, _file, cb) => {
-    const subDir = req.query.path || '';
-    const dest = path.join(uploadPath, subDir);
+    const subDir = (req.query.path || '').replace(/\.\./g, '');
+    const dest = path.resolve(config.shareRoot, subDir);
+    if (!dest.startsWith(path.resolve(config.shareRoot))) {
+      return cb(new Error('Invalid upload path'));
+    }
     fs.mkdirSync(dest, { recursive: true });
     cb(null, dest);
   },
@@ -117,8 +120,8 @@ router.get('/download', requireAuth, (req, res) => {
 
 // Upload files
 router.post('/upload', requireAuth, upload.array('files', 50), (req, res) => {
-  const redirectPath = req.query.path || config.uploadDir;
-  res.redirect(`/?path=${encodeURIComponent(redirectPath)}`);
+  const redirectPath = req.query.path || '';
+  res.redirect(`/?path=${encodeURIComponent(redirectPath)}`);;
 });
 
 // Delete a file or folder
