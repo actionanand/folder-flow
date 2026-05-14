@@ -64,25 +64,40 @@
         <p>These commands keep video/subtitles intact, avoid re-encoding (<code>-c copy</code>), and only change the default audio flag.</p>
 
         <p style="margin-top:12px;font-weight:600;">List audio tracks in a file</p>
-        <pre><code>ffmpeg -i movie.mkv</code></pre>
-        <pre><code>ffprobe -v error -select_streams a \
+        <div class="cmd-block">
+          <pre><code>ffmpeg -i movie.mkv</code></pre>
+          <button class="btn btn-xs btn-outline cmd-copy" onclick="copyCmd(this)">📋</button>
+        </div>
+        <div class="cmd-block">
+          <pre><code>ffprobe -v error -select_streams a \
   -show_entries stream=index:stream_tags=language \
   -of compact=p=0:nk=1 movie.mkv</code></pre>
+          <button class="btn btn-xs btn-outline cmd-copy" onclick="copyCmd(this)">📋</button>
+        </div>
 
         <p style="margin-top:12px;font-weight:600;">Make 1st audio track default</p>
-        <pre><code>ffmpeg -i movie.mkv -map 0 \
+        <div class="cmd-block">
+          <pre><code>ffmpeg -i movie.mkv -map 0 \
   -disposition:a:0 default -disposition:a:1 0 \
   -c copy output.mkv</code></pre>
+          <button class="btn btn-xs btn-outline cmd-copy" onclick="copyCmd(this)">📋</button>
+        </div>
 
         <p style="margin-top:12px;font-weight:600;">Make 2nd audio track default</p>
-        <pre><code>ffmpeg -i movie.mkv -map 0 \
+        <div class="cmd-block">
+          <pre><code>ffmpeg -i movie.mkv -map 0 \
   -disposition:a:0 0 -disposition:a:1 default \
   -c copy output.mkv</code></pre>
+          <button class="btn btn-xs btn-outline cmd-copy" onclick="copyCmd(this)">📋</button>
+        </div>
 
         <p style="margin-top:12px;font-weight:600;">Make 3rd audio track default</p>
-        <pre><code>ffmpeg -i movie.mkv -map 0 \
+        <div class="cmd-block">
+          <pre><code>ffmpeg -i movie.mkv -map 0 \
   -disposition:a:0 0 -disposition:a:1 0 -disposition:a:2 default \
   -c copy output.mkv</code></pre>
+          <button class="btn btn-xs btn-outline cmd-copy" onclick="copyCmd(this)">📋</button>
+        </div>
       </div>
     </details>
   </main>
@@ -155,6 +170,16 @@
       s.textContent = msg;
       s.classList.add('active');
       setTimeout(function() { s.classList.remove('active'); }, 3000);
+    }
+
+    function copyCmd(btn) {
+      var code = btn.closest('.cmd-block').querySelector('code');
+      var text = code.textContent.replace(/\\\s*\n\s*/g, ' ').replace(/\s+/g, ' ').trim();
+      navigator.clipboard.writeText(text).then(function() {
+        btn.textContent = '✅';
+        showSnackbar('Copied to clipboard');
+        setTimeout(function() { btn.textContent = '📋'; }, 1500);
+      });
     }
   </script>
 </body>

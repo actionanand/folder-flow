@@ -69,7 +69,7 @@
             </div>
           <% } %>
         <% } else { %>
-          <video id="media-player" <% if (!live) { %>controls autoplay<% } else { %><% if (!allowPip) { %>disablePictureInPicture <% } %>controlsList="nodownload noplaybackrate"<% } %> class="video-player">
+          <video id="media-player" <% if (!live) { %>controls autoplay<% } else { %><% if (!allowPip) { %>disablePictureInPicture <% } %>controlsList="nodownload noplaybackrate" playsinline<% } %> class="video-player">
             <source src="/s/<%= token %>/data" type="<%= mimeType %>">
             Your browser does not support video playback.
           </video>
@@ -79,6 +79,9 @@
               <button onclick="document.getElementById('media-player').pause()" class="btn btn-sm btn-outline">⏸ Pause</button>
               <% if (showMute) { %>
               <button id="mute-btn" class="btn btn-sm btn-outline" onclick="var p=document.getElementById('media-player');p.muted=!p.muted;this.textContent=p.muted?'🔊 Unmute':'🔇 Mute';">🔇 Mute</button>
+              <% } %>
+              <% if (allowPip) { %>
+              <button id="pip-btn" class="btn btn-sm btn-outline" onclick="var p=document.getElementById('media-player');if(document.pictureInPictureElement)document.exitPictureInPicture();else if(p.requestPictureInPicture)p.requestPictureInPicture();">🖼 PiP</button>
               <% } %>
               <span class="live-badge" style="margin-left:auto;">🔴 LIVE</span>
             </div>
@@ -109,7 +112,14 @@
         var countdownInterval = null;
 
         function fetchSync() {
-          return fetch('/s/<%= token %>/sync').then(function(r) { return r.json(); });
+          return fetch('/s/<%= token %>/sync').then(function(r) {
+            if (!r.ok) {
+              return { error: true, stopped: true };
+            }
+            return r.json();
+          }).catch(function() {
+            return { error: true, stopped: true };
+          });
         }
 
         function showCountdown(ms) {
@@ -134,6 +144,17 @@
         }
 
         function handleSync(data) {
+          if (data.error || data.stopped) {
+            player.pause();
+            if (countdownEl) {
+              countdownEl.style.display = 'flex';
+              countdownEl.querySelector('.countdown-content').innerHTML =
+                '<p style="font-size:48px;">⏹</p>' +
+                '<h2 style="margin:16px 0;">Stream has ended</h2>' +
+                '<p style="color:var(--text-muted);">This stream was stopped by the host.</p>';
+            }
+            return;
+          }
           if (!data.started) {
             showCountdown(data.startsInMs);
           } else {

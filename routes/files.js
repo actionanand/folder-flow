@@ -128,6 +128,13 @@ router.post('/delete', requireAuth, (req, res) => {
   if (!fullPath || !fs.existsSync(fullPath)) {
     return res.status(404).render('error', { message: 'Not found' });
   }
+
+  // Protect uploads folder and .gitkeep files
+  const relPath = path.relative(path.resolve(config.shareRoot), fullPath);
+  if (relPath === config.uploadDir || path.basename(relPath) === '.gitkeep') {
+    return res.status(403).render('error', { message: 'This item cannot be deleted' });
+  }
+
   const stat = fs.statSync(fullPath);
   if (stat.isDirectory()) {
     fs.rmSync(fullPath, { recursive: true, force: true });

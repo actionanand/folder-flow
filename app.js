@@ -95,6 +95,11 @@ app.post('/change-pin', requireAdmin, (req, res) => {
   res.redirect('/ftp-info?success=PINs+updated+successfully');
 });
 
+// ---- 404 catch-all ----
+app.use((req, res) => {
+  res.status(404).render('error', { message: `Page not found: ${req.originalUrl}` });
+});
+
 // ---- Start servers ----
 const lanIP = getLocalIP();
 const wslIP = isWSL() ? getWSLIP() : null;
